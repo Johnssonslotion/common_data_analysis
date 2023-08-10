@@ -8,10 +8,6 @@ import sys
 from dotenv import load_dotenv
 
 
-def test_default():
-    assert True == True 
-    m=KakaoFunction("address")
-
 def test_common_api_initialize(monkeypatch):
     load_dotenv(verbose=True)
     input=[Apis.kakao,0]
@@ -64,10 +60,15 @@ def test_common_api_set_params_columns():
         config=config
     )
 
+def test_common_api_get_data_local():
+    pass
 
 
 
+def test_common_api_get_data_remote_enroll():
+    pass
 
 
 
-
+def test_common_api_get_data_remote_update():
+    pass
