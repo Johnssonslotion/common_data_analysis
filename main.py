@@ -1,5 +1,5 @@
 
-from src import api_common
+from app import api_function
 
 
 
@@ -7,5 +7,5 @@ from src import api_common
     
 
 if __name__ == "__main__":
-    api_common.main()
+    api_function.main()
     

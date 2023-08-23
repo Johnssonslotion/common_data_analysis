@@ -1,13 +1,16 @@
 import itertools
 import pandas as pd
-from ..model import *
+from model import CommonSet
 def setting_params(param_config:CommonSet):    
+    '''
     ## selected_params 을 통해서 기본값을 추출하고 가져온다.
     ## 해당 파라미터는 model에서 정의되어있어야 하고, 해당 검증은 pydantic 을 통해서 실시한다.
     ## TODO: pydantic 을 통해서 검증하는 로직을 추가한다.
 
     ## parameters 의 구조
     ## Class CommonSet을 따름
+    '''
+    
     ret=[]
     df=pd.DataFrame()
     base={}
@@ -17,6 +20,7 @@ def setting_params(param_config:CommonSet):
             ele_cols=zip(*[df[jj] for jj in param_config.selection])        
         else:
             ele_cols=df[param_config.selection].tolist()
+
     base.update(param_config.params)
     for i,comb in enumerate(ele_cols):
         combinations=itertools.product([comb],*base.values())

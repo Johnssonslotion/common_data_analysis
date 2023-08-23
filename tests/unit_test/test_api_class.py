@@ -1,32 +1,37 @@
-from ..src.api_common import ApiCommon
-from ..src.model import *
-from ..src.utils import *
-from pydantic.dataclasses import dataclass
+from api_function import ApiFunction
+from model import *
+from utils import *
+from api.apis import Apis
+from api.kakao_api import *
 
+
+import asyncio
 import os
 import sys
 from dotenv import load_dotenv
+import pytest
 
 
 def test_common_api_initialize(monkeypatch):
     load_dotenv(verbose=True)
     input=[Apis.kakao,0]
     monkeypatch.setattr('builtins.input', lambda _: input.pop(0))
-    conn=ApiCommon()
+    conn=ApiFunction()
     assert conn.model==Apis.kakao
-    # conn=ApiCommon()
+    # conn=ApiFunction()
     # assert conn.model==Apis.kakao
 
 def test_common_api_health_check():
     load_dotenv(verbose=True)
-    conn=ApiCommon(model=Apis.kakao)
+    conn=ApiFunction(model=Apis.kakao)
     assert conn.health_check()==True
 
 def test_common_api_set_params():
-    conn=ApiCommon(model=Apis.kakao)
+    conn=ApiFunction(model=Apis.kakao)
     ## default src
     src='./data/kimhae_target_section.csv'
     src_selection="x"
+
     config=CommonSet(
         model=Apis.kakao,
         function="keyword",
@@ -41,8 +46,10 @@ def test_common_api_set_params():
     conn.define_iter(
         config=config
     )
+    assert len(conn.queue)==len(matrix)
+
 def test_common_api_set_params_columns():
-    conn=ApiCommon(model=Apis.kakao)
+    conn=ApiFunction(model=Apis.kakao)
     src='./data/kimhae_target_section.csv'
     src_selection=["x","y"]
     config=CommonSet(
@@ -59,16 +66,28 @@ def test_common_api_set_params_columns():
     conn.define_iter(
         config=config
     )
+    assert len(conn.queue)==len(matrix)
 
-def test_common_api_get_data_local():
+
+
+@pytest.mark.asyncio
+async def test_common_api_call_api_local_case_1_no_area():
+    '''
+       
+    
+    '''
+    conn=ApiFunction(model=Apis.kakao)
+    params=KeywordFunction(
+        query="안산해양초등학교",
+    )
+    ret=await conn.call_api(params=params)
+    assert ret.meta.is_end ==True, "기본 출력값 확인" 
+    assert ret.meta.total_count==3, "기본 출력값 확인" 
+
+def test_common_api_call_api_remote_enroll():
     pass
 
 
 
-def test_common_api_get_data_remote_enroll():
-    pass
-
-
-
-def test_common_api_get_data_remote_update():
+def test_common_api_call_api_remote_update():
     pass

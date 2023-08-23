@@ -3,6 +3,7 @@ from pydantic_core import CoreSchema, core_schema
 from pydantic import BaseModel, Field, PrivateAttr, computed_field, GetCoreSchemaHandler, GetJsonSchemaHandler, model_validator
 from pydantic.json_schema import JsonSchemaValue
 from typing import Optional, List, Union, Any
+#from ..base import ApiBase
 
 
 class CommonHeader(BaseModel):
@@ -48,6 +49,7 @@ class CommonMeta(BaseModel):
 
 class CommonResponse(BaseModel):
     pass
+
 
 class CommonSet(BaseModel):
     '''
