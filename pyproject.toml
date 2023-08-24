@@ -19,7 +19,7 @@ celery = "^5.3.1"
 pygeohash = "^1.2.0"
 pillow = "^10.0.0"
 matplotlib = "^3.7.2"
-
+geohash_manager= {git = "https://github.com/Johnssonslotion/geohash_manager"}
 
 [tool.poetry.group.dev.dependencies]
 tqdm = "^4.66.0"

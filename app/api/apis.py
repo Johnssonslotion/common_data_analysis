@@ -4,9 +4,6 @@ from . import KakaoRequest, KakaoHeader, KakaoFunction, KakaoResponse, KakaoCate
 from .kakao_strategy import KakaoStrategy
 
 
-
-
-
 class Apis(Enum):
     kakao={
         "request":KakaoRequest,

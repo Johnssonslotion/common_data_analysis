@@ -2,7 +2,7 @@ from typing import Any, Optional, List, Union
 from dotenv import load_dotenv
 from pydantic import Field, computed_field,field_serializer,  field_validator,ConfigDict,InstanceOf, model_validator,BaseModel
 from enum import Enum,EnumMeta
-
+from geohash_manager import RectShape
 
 from model import CommonResponse, CommonRequest, CommonHeader,CommonQuery, CommonFunction
 
@@ -75,7 +75,7 @@ class KeywordFunction(CommonQuery):
     x:Optional[str] = None
     y:Optional[str] = None
     radius:Optional[str] = None
-    rect:Optional[str] = None
+    rect:Optional[RectShape] = None
     sort:Optional[str] = None
     page:str = "1"
     size:str = "15"
@@ -117,8 +117,8 @@ class CategoryFunction(CommonQuery):
     x:Optional[str] = None
     y:Optional[str] = None
     radius:Optional[str] = None
-    rect:Optional[str] = None
-    sort:str = "distance"
+    rect:Optional[RectShape] = None
+    sort:Optional[str] = None
     page:str = "1" ## <45
     size:str = "15" ## <15
     
@@ -127,6 +127,12 @@ class CategoryFunction(CommonQuery):
     def url(self)->str:
         base="https://dapi.kakao.com/"
         return f"{base}v2/local/search/category.json"
+    
+    @field_serializer("category_group_code")
+    def serialize_category_group_code(self, v:KakaoCategory)->str:
+        if v is None:
+            return None
+        return v.value
 
 class KakaoFunction(CommonFunction):
     address=AddressFunction
@@ -142,7 +148,7 @@ class KakaoFunction(CommonFunction):
 class KakaoRequest(CommonRequest):
     model_config =ConfigDict(revalidate_instances='subclass-instances')
     header:KakaoHeader
-    params:Any
+    params:Union[AddressFunction,GeocodeFunction,KeywordFunction,CategoryFunction]
     
     def __init__(self, **data):
         url=data["params"].url

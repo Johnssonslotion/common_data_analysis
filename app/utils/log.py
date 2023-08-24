@@ -5,6 +5,7 @@ import os
 class BaseLogger:
     def init_logger(self,**kwargs): ## 강제로 logger를 초기화 하고 싶을때 사용
         logger_name = kwargs.get('logger_name')
+        file_log=kwargs.get('file_log',True)
         if not logger_name:
             logger_name = __name__
         str_id=str(id(self))
@@ -25,7 +26,8 @@ class BaseLogger:
         self.formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
         self.file_handler = logging.FileHandler(log_file_path)
         self.file_handler.setFormatter(self.formatter)
-        self.logger.addHandler(self.file_handler)
+        if file_log:
+            self.logger.addHandler(self.file_handler) ## 
         self.obj = None
         self.prefix = None
         self.fn = None

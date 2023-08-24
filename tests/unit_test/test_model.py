@@ -1,6 +1,7 @@
 import os
 import sys
 from dotenv import load_dotenv
+import pytest
 import requests
 
 from api.apis import Apis
@@ -76,27 +77,43 @@ def test_specific_request_w_get():
     assert res.status_code==200
     assert res.json()["meta"]["total_count"]>0
 
-def test_specific_request_w_get_forced_authKey():
+
+@pytest.mark.parametrize("test_input,expected_code,expected_count",[((127.056146,37.505308,100),200,11),((127.056146,37.505308,127.066146,37.515308),200,224)])
+def test_specific_request_w_get_forced_authKey(test_input,expected_code,expected_count):
     load_dotenv(verbose=True)
+    if len(test_input) == 3:
+        params=CategoryFunction( ##TODO : CircleShape에서 받아서 처리하도록 수정
+            category_group_code=KakaoCategory.CAFE,
+            x=str(test_input[0]),
+            y=str(test_input[1]),
+            radius=str(test_input[2]),
+        )
+    elif len(test_input) == 4:
+        params=CategoryFunction(
+            category_group_code=KakaoCategory.CAFE,
+            rect=RectShape(
+                xmin=test_input[0],
+                ymin=test_input[1],
+                xmax=test_input[2],
+                ymax=test_input[3],
+            )
+        )
+    else:
+        raise ValueError("test_input is invalid")    
     kakao_key=os.environ["KAKAOAPI"]
     header=KakaoHeader(
         authKey=kakao_key
     )
     header=KakaoHeader()
-    params=CategoryFunction(
-        category_group_code=KakaoCategory.CAFE,
-        x="127.056146",
-        y="37.505308",
-        radius="20000",
-    )
+    
     item=KakaoRequest(
         header=header,
         params=params
     )
-    res=requests.get(item.url, headers=item.header.model_dump(by_alias=True), params=item.params.model_dump(by_alias=True)
-    )
-    assert res.status_code==200
-    assert res.json()["meta"]["total_count"]>0
+    p=item.params.model_dump(by_alias=True)
+    res=requests.get(item.url, headers=item.header.model_dump(by_alias=True), params=p)
+    assert res.status_code==expected_code
+    assert res.json()["meta"]["total_count"]==expected_count, f"test_input : {test_input}, expected_count : {expected_count}, actual_count : {res.json()['meta']['total_count']}"
 
 
 def test_setting_params():
@@ -120,28 +137,14 @@ def test_setting_params():
     assert config.src==src
     assert config.selection==src_selection
 
-## 패키지로 마이그레이션
-# def test_spatial_model():
-#     center_1= (37.505308, 127.056146)
-#     center_2= (127.056146,37.505308)
-#     rect_1= (37.505308, 127.056146, 37.505308, 127.056146)
-#     rect_2= (127.056146,37.505308, 127.056146,37.505308)
 
-#     case_1=CircleShape(x=center_1[0],y=center_1[1],radius=2000)
-#     assert case_1.x==center_1[0] and case_1.y==center_1[1] and case_1.radius==2000, "case_1"
-#     case_2=CircleShape(center=center_1,radius=20000)
-#     assert case_2.x==center_1[0] and case_2.y==center_1[1] and case_2.radius==20000, "case_2"
-#     case_3=CircleShape(center=center_2,radius=20000)
-#     assert case_3.x==center_2[1] and case_3.y==center_2[0] and case_3.radius==20000, "case_3"
-    
-#     rect_1=RectShape(xmin=rect_1[0],ymin=rect_1[1],xmax=rect_1[2],ymax=rect_1[3])
-#     assert rect_1.xmin==rect_1[0] and rect_1.ymin==rect_1[1] and rect_1.xmax==rect_1[2] and rect_1.ymax==rect_1[3], "rect_1"
-#     rect_2=RectShape(xmin=rect_2[0],ymin=rect_2[1],xmax=rect_2[2],ymax=rect_2[3])
-#     assert rect_2.xmin==rect_2[1] and rect_2.ymin==rect_2[0] and rect_2.xmax==rect_2[3] and rect_2.ymax==rect_2[2], "rect_2"
 
 
 
     
+
+
+
 
 
 

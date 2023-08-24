@@ -16,7 +16,7 @@ class ApiFunction(ApiBase,BaseLogger):
     ## TODO : argparser 추가
     '''
     def __init__(self,model:Apis=None,**kwargs):
-        kwargs["logger_name"]="api_common"
+        kwargs["logger_name"]="api_common"        
         self.init_logger(**kwargs)        
         ### TODO : argparser should be added
         if model is not None:
@@ -149,12 +149,11 @@ class ApiFunction(ApiBase,BaseLogger):
         self.report(fn='process',state='start')
         func=kwargs.get("function")
         params=kwargs["params"]
-        strategy=self.process_strategy()
         request_obj=self.param_parser(params=params,func=func)
+        strategy=self.process_strategy(request_obj=request_obj)
         ret = await strategy.process(self,request_obj)
         ## process 함수는 wrapper 처럼 동작해야함
         return ret
-        
         
 
 
