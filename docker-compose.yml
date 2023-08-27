@@ -2,14 +2,18 @@
 version: '3.1'
 
 services:
-  redis:
-    image: redis:latest
-    container_name: redis
+  rebbitmq:
+    image: rabbitmq:3.12-management
     ports:
-      - 6379:6379
+      - "5672:5672"
+      - "15672:15672"
     volumes:
-      - ./redis/data:/data
-    command: redis-server --appendonly yes
+      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia
+      - ./rabbitmq/logs:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-admin}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-admin}
+      - RABBITMQ_DEFAULT_VHOST=/
+    restart: always
     
-
 
