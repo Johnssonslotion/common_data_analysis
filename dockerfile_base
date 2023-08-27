@@ -1,0 +1,56 @@
+### default celery worker with mq enabled
+FROM python:3.11.4-slim-bullseye
+
+ENV LIBRARY_PATH=/lib:/usr/lib
+
+RUN apt-get update && apt-get install -y \ 
+    bash\
+    curl\
+    gcc \ 
+    python3-dev \
+    build-essential \
+    git \
+    openssl libssl-dev libproj-dev libffi-dev
+
+# RUN addgroup -g 1000 worker && \
+#     adduser -S -s /bin/bash -u 1000 -G worker worker -> for alpine
+RUN addgroup --gid 1000 worker && \
+    adduser --system --shell /bin/bash --uid 1000 --ingroup worker worker
+
+ENV PATH="/home/worker/.local/bin:$PATH"
+ENV PATH="/home/worker/geospatial_data_analysis/:$PATH"
+ENV PYTHONPATH="/home/worker/geospatial_data_analysis/:$PYTHONPATH"
+ENV PYTHONPATH="/home/worker/geospatial_data_analysis/app:$PYTHONPATH"
+RUN pip install poetry
+
+
+RUN mkdir -p /home/worker/geospatial_data_analysis
+WORKDIR /home/worker/geospatial_data_analysis
+COPY ./poetry.lock /home/worker/geospatial_data_analysis/
+COPY ./pyproject.toml /home/worker/geospatial_data_analysis/
+
+RUN chown -R worker:root /home/worker && chmod -R 775 /home/worker
+USER worker
+RUN poetry config virtualenvs.in-project true
+RUN poetry install --only main --no-interaction
+
+## for test, transfer from dev to prod
+# ### copy code
+# RUN mkdir -p /home/worker/geospatial_data_analysis/app
+# RUN mkdir -p /home/worker/geospatial_data_analysis/tests
+# RUN mkdir -p /home/worker/app/api
+# RUN mkdir -p /home/worker/app/base
+# RUN mkdir -p /home/worker/app/model
+# RUN mkdir -p /home/worker/app/utils
+# RUN mkdir -p /home/worker/tests/module_test
+# RUN mkdir -p /home/worker/tests/unit_test
+
+# COPY ./app /home/worker/app
+# COPY ./tests /home/worker/tests
+
+# RUN chown -R worker:root /home/worker && chmod -R 775 /home/worker
+
+# COPY ./entrypoint.sh /home/worker
+# COPY entrypoint.sh /home/worker/entrypoint.sh
+# RUN chmod +x /home/worker/entrypoint.sh
+# ENTRYPOINT ["/home/worker/entrypoint.sh"]

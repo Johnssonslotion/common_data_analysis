@@ -16,7 +16,8 @@
             "name": "Python: main.py",
             "type": "python",
             "request": "launch",
-            "program": "./main.py",
+            "program": "./app/celery_main.py",
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": true
         }

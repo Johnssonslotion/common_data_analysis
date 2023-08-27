@@ -40,8 +40,8 @@ class KakaoHeader(CommonHeader):
         if "authKey" in kwargs:
             self.authKey=f"KakaoAK {kwargs['authKey']}"
         else:
-            dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-            load_dotenv(dotenv_path)
+            # dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+            # load_dotenv(dotenv_path)
             auth_key=os.getenv("KAKAOAPI")
             self.authKey=f"KakaoAK {auth_key}"
     
@@ -159,8 +159,6 @@ class KakaoRequest(CommonRequest):
     def check_params(cls, values):
         assert any([isinstance(values, v.value) for v in list(KakaoFunction)]) == True, "params must be one of KakaoFunction"
         return values
-
-
 
 class KakaoMeta(BaseModel):
     total_count:int

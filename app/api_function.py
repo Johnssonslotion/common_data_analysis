@@ -1,4 +1,6 @@
 import itertools
+
+from celery import Task
 from model import *
 from base import *
 from utils import BaseLogger,setting_params
@@ -7,12 +9,12 @@ from api.apis import Apis
 import pandas as pd
 import requests
 
-class ApiFunction(ApiBase,BaseLogger):
+class ApiFunction(Task, ApiBase,BaseLogger):
     '''
-    APIBase의 인터페이스 wrapper -> ApiBase로 기능 이전, 인터페이스 용 함수만 정의
-    - model : Apis
-    - ret : list of df or list of dict [메모리 관리에 유의할 것]
-    ## TODO : pydantic V2 에 적합한 출력폼으로 변경    
+    APIBase의 인터페이스 wrapper 
+    -> ApiBase로 기능 이전, 인터페이스 용 함수만 정의
+    -> celery task를 상속받아서, 비동기로 동작하게 함
+    - model : Apis     
     ## TODO : argparser 추가
     '''
     def __init__(self,model:Apis=None,**kwargs):
@@ -61,7 +63,6 @@ class ApiFunction(ApiBase,BaseLogger):
         '''
         pass
 
-
     def health_check(self):
         self.report(fn='health_check',state='start')
         if self.model==None:
@@ -79,7 +80,7 @@ class ApiFunction(ApiBase,BaseLogger):
             raise Exception("health check failed")
         else:        
             return True
-        
+    
     def define_iter(self, **kwargs):
         '''
         우선순위 큐를 정의하는 함수.                
@@ -102,6 +103,8 @@ class ApiFunction(ApiBase,BaseLogger):
         self.queue=queue
         self.report(fn='define_model',state='end',msg=f'num_of_length : {len(queue)}') ## TODO : pydantic V2 에 적합한 출력폼으로 변경
 
+    
+    
     async def run(self,**kwargs):
         '''
         실행함수
@@ -138,6 +141,7 @@ class ApiFunction(ApiBase,BaseLogger):
         self.report(state='end',msg=f'num_item:{ret.count}') ## 비고 commonResponse에 count property 추가
         return ret
     
+
     async def process(self,**kwargs):
         '''
         TODO : process 시나리오 정의하기
@@ -149,9 +153,8 @@ class ApiFunction(ApiBase,BaseLogger):
         self.report(fn='process',state='start')
         func=kwargs.get("function")
         params=kwargs["params"]
-        request_obj=self.param_parser(params=params,func=func)
-        strategy=self.process_strategy(request_obj=request_obj)
-        ret = await strategy.process(self,request_obj)
+        request_obj=kwargs.get("request_obj",None)
+        ret= await super().process(params=params, function=func,request_obj=request_obj)
         ## process 함수는 wrapper 처럼 동작해야함
         return ret
         

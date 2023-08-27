@@ -12,8 +12,6 @@ def conn():
 def test_function(func):
     return Apis.kakao.function[func]()
 
-
-
 @pytest.mark.parametrize("test_query, expected_request_counts, expected_documents_counts", [("안산해양초등학교",1,3),("카카오",3,45),("초등학교 서울특별시 강남구 논현동",3,45)])
 @pytest.mark.asyncio
 async def test_kakao_single_process(conn,test_query, expected_request_counts, expected_documents_counts):
@@ -25,9 +23,6 @@ async def test_kakao_single_process(conn,test_query, expected_request_counts, ex
     ## merge step
     merged_documents = [j for i in ret for j in i["response"].documents] ## 추후 pandas로 변경
     assert len(merged_documents) == expected_documents_counts, f"expected documents counts : {expected_documents_counts} but {len(ret[0]['response'].documents)}"
-
-
-
 
 @pytest.mark.parametrize("test_query, expected_request_counts, expected_documents_counts", [(("127.031767","37.497175","200"),10,150)])
 @pytest.mark.asyncio
@@ -47,5 +42,4 @@ async def test_kakao_area_search(conn,test_query, expected_request_counts, expec
 
 
 
-    
-    
+

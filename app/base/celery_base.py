@@ -15,6 +15,8 @@ class CeleryBase:
         ## For local, #TODO : For production
         if ENV=="PROD":
             url=os.environ.get("RABBITMQ_URL")
+        elif ENV=="DOCKER":
+            url="rabbitmq"
         else:
             url="localhost"
         if username=="guest":

@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "analysis package for geospatial data"
 authors = ["John Park <johnpark@johnssonslab.info>"]
 readme = "README.md"
-packages = [{include = "geospatial_data_analysis"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -24,9 +23,9 @@ cryptography = "^41.0.3"
 pytest = "^7.4.0"
 pytest-asyncio = "^0.21.1"
 pytest-celery = "^0.0.0"
+tqdm = "^4.66.0"
 
 [tool.poetry.group.dev.dependencies]
-tqdm = "^4.66.0"
 ipykernel = "^6.25.1"
 seaborn = "^0.12.2"
 notebook = "^7.0.2"
@@ -36,5 +35,7 @@ notebook = "^7.0.2"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[pytest]
-testpaths = "./tests"
+
+[tool.pytest.ini_options]
+pythonpath= ["app"]
+

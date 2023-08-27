@@ -1003,7 +1003,7 @@ shapely = "^2.0.1"
 type = "git"
 url = "https://github.com/Johnssonslotion/geohash_manager"
 reference = "HEAD"
-resolved_reference = "a6b6dc666deda9be8a3cc9a97689621e7de3cf40"
+resolved_reference = "7a97ebf2ff2e1909fee8e77a0d75bbfdb9fd935b"
 
 [[package]]
 name = "geopandas"

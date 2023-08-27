@@ -2,7 +2,7 @@
 version: '3.1'
 
 services:
-  rebbitmq:
+  rabbitmq:
     image: rabbitmq:3.12-management
     ports:
       - "5672:5672"
@@ -15,5 +15,44 @@ services:
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-admin}
       - RABBITMQ_DEFAULT_VHOST=/
     restart: always
-    
+    networks:
+      - mqnet
 
+  worker_1:
+    image: celeryworker:latest
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_WORKER_USER=WORKER_1
+      - ENV=DOCKER
+    networks:
+      - mqnet
+    depends_on:
+      - rabbitmq
+  
+  worker_2:
+    image: celeryworker:latest
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_WORKER_USER=WORKER_2
+      - ENV=DOCKER
+    networks:
+      - mqnet
+    depends_on:
+      - rabbitmq
+
+  worker_3:
+    image: celeryworker:latest
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_WORKER_USER=WORKER_3
+      - ENV=DOCKER
+    networks:
+      - mqnet
+    depends_on:
+      - rabbitmq
+networks:
+  mqnet:
+    driver: bridge

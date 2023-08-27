@@ -28,7 +28,7 @@ def celeryBase():
     return celeryBase
 
 
-def test_temp(celeryBase,celery_worker):
+def test_single_function(celeryBase,celery_worker):
     ret=celeryBase.process(1,2).get()
     print(ret)
     assert ret == 3 

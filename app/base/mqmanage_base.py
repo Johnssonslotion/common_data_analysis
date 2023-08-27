@@ -32,10 +32,12 @@ class MqManager(BaseLogger):
         mq의 설정을 변경한다.
         '''
         default_url_aws=os.environ.get("RABBITMQ_URL")
-        self.env=kwargs.get("ENV","DEV")
-
+        self.env=kwargs.get("env","DEV")
+        print(f"current env : {self.env}")
         if self.env=="DEV":
             self.url="localhost"
+        elif self.env=="DOCKER":
+            self.url="rabbitmq"
         elif self.env=="PROD":
             self.url=default_url_aws
         else:
@@ -47,11 +49,15 @@ class MqManager(BaseLogger):
         '''
         return pika.PlainCredentials(username=user,password=passward)
 
-    def worker_list(self):
+    def worker_list (self):
         '''
         worker를 생성한다.
         '''
+        print(f"worker : {self.env}")
         if self.env=="DEV":    
+            admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
+            admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")
+        elif self.env=="DOCKER":    
             admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
             admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")
         elif self.env=='PROD':
@@ -72,6 +78,9 @@ class MqManager(BaseLogger):
         if self.env=="DEV":    
             admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
             admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")
+        elif self.env=='DOCKER':
+            admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
+            admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")        
         elif self.env=='PROD':
             admin_user=os.environ.get("RABBITMQ_ADMIN_USER")
             admin_pass=os.environ.get("RABBITMQ_ADMIN_PASS")
@@ -104,6 +113,9 @@ class MqManager(BaseLogger):
         if self.env=="DEV":    
             admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
             admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")
+        elif self.env=='DOCKER':
+            admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
+            admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")        
         elif self.env=='PROD':
             admin_user=os.environ.get("RABBITMQ_ADMIN_USER")
             admin_pass=os.environ.get("RABBITMQ_ADMIN_PASS")
@@ -122,7 +134,52 @@ class MqManager(BaseLogger):
         )
         return res
 
-
+    def assign_permission(self, user, vhost="%2F", configure=".*", write=".*", read=".*"):
+        '''
+        worker에게 vhost에 대한 권한을 부여한다.
+        '''
+        if self.env=="DEV":    
+            admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
+            admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")
+        elif self.env=='DOCKER':
+            admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
+            admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")        
+        elif self.env=='PROD':
+            admin_user=os.environ.get("RABBITMQ_ADMIN_USER")
+            admin_pass=os.environ.get("RABBITMQ_ADMIN_PASS")
+        else:
+            raise Exception("ENV is not defined")
+        self.logger.info(f"permission : {user}")
+        res=requests.put(
+            url=f"http://{self.url}:15672/api/permissions/{vhost}/{user}",
+            auth=(admin_user,admin_pass),
+            json={
+                "configure":configure,
+                "write":write,
+                "read":read
+            }
+        )
+        return res
+    def health_check(self):
+        '''
+        mq의 상태를 확인한다.
+        '''
+        if self.env=="DEV":    
+            admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
+            admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")
+        elif self.env=='DOCKER':
+            admin_user=os.environ.get("RABBITMQ_DEFAULT_USER")
+            admin_pass=os.environ.get("RABBITMQ_DEFAULT_PASS")        
+        elif self.env=='PROD':
+            admin_user=os.environ.get("RABBITMQ_ADMIN_USER")
+            admin_pass=os.environ.get("RABBITMQ_ADMIN_PASS")
+        else:
+            raise Exception("ENV is not defined")
+        res=requests.get(
+            url=f"http://{self.url}:15672/api/healthchecks/node",
+            auth=(admin_user,admin_pass),
+        )
+        return res
 
 
 
