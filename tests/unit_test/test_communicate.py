@@ -9,7 +9,6 @@ from base.mqmanage_base import MqManager
 
 @pytest.fixture(scope="module",params=[("guest","guest"),("RABBITMQ_WORKER_1_USER","RABBITMQ_WORKER_1_PASS")], ids=["guest","env_settings"])
 def connection_(request):
-    load_dotenv(verbose=True)
     if request.param[0]=="guest":
         username=request.param[0]
         password=request.param[1]

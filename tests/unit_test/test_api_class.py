@@ -8,12 +8,11 @@ from api.kakao_api import *
 import asyncio
 import os
 import sys
-from dotenv import load_dotenv
+
 import pytest
 
 
 def test_common_api_initialize(monkeypatch):
-    load_dotenv(verbose=True)
     input=[Apis.kakao,0]
     monkeypatch.setattr('builtins.input', lambda _: input.pop(0))
     conn=ApiFunction()
@@ -22,7 +21,7 @@ def test_common_api_initialize(monkeypatch):
     # assert conn.model==Apis.kakao
 
 def test_common_api_health_check():
-    load_dotenv(verbose=True)
+    
     conn=ApiFunction(model=Apis.kakao)
     assert conn.health_check()==True
 

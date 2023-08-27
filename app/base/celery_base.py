@@ -1,5 +1,4 @@
 from celery import Celery, Task
-from dotenv import load_dotenv
 import os
 from celery.bin import worker
 
@@ -13,7 +12,6 @@ class CeleryBase:
     
     '''
     def __init__(self, username, password,ENV=None, config=None):
-        load_dotenv(verbose=True)
         ## For local, #TODO : For production
         if ENV=="PROD":
             url=os.environ.get("RABBITMQ_URL")

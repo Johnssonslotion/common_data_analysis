@@ -10,14 +10,12 @@ from cryptography.fernet import Fernet
 
 @pytest.fixture(scope="module")
 def celeryBase():
-    load_dotenv(verbose=True)
     username=os.environ.get("RABBITMQ_WORKER_1_USER")
     password=os.environ.get("RABBITMQ_WORKER_1_PASS_ENC")
     manager=CeleryBase(username=username,password=password,ENV="DEV")
     return manager
 
 def test_secret_key_password():
-    load_dotenv(verbose=True)
     password="guest"
     encoded=CeleryBase.encrypt(password)
     assert encoded!=password

@@ -1,10 +1,9 @@
 import os
 import pytest
 from base.celery_base import CeleryBase
-from dotenv import load_dotenv
 from threading import Thread    
 
-load_dotenv(verbose=True)
+
 
 @pytest.fixture(scope="function")
 def celery_worker():

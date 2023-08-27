@@ -1,6 +1,5 @@
 import os
 import argparse
-from dotenv import load_dotenv
 from pydantic import BaseModel
 import requests
 from utils.log import BaseLogger
@@ -25,7 +24,6 @@ class MqManager(BaseLogger):
 
     '''
     def __init__(self,**kwargs):
-        load_dotenv(verbose=True)
         self.init_logger(logger_name="mq_manager")
         self.config(**kwargs)
 

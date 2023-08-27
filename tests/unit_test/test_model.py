@@ -1,6 +1,5 @@
 import os
 import sys
-from dotenv import load_dotenv
 import pytest
 import requests
 
@@ -40,7 +39,6 @@ def test_specific_model():
     assert req.url=="https://dapi.kakao.com/v2/local/search/keyword.json"
 
 def test_specific_request():
-    load_dotenv(verbose=True)
     kakao_key=os.environ["KAKAOAPI"]
     header=KakaoHeader(
         authKey=kakao_key
@@ -80,7 +78,6 @@ def test_specific_request_w_get():
 
 @pytest.mark.parametrize("test_input,expected_code,expected_count",[((127.056146,37.505308,100),200,11),((127.056146,37.505308,127.066146,37.515308),200,224)])
 def test_specific_request_w_get_forced_authKey(test_input,expected_code,expected_count):
-    load_dotenv(verbose=True)
     if len(test_input) == 3:
         params=CategoryFunction( ##TODO : CircleShape에서 받아서 처리하도록 수정
             category_group_code=KakaoCategory.CAFE,
@@ -117,7 +114,6 @@ def test_specific_request_w_get_forced_authKey(test_input,expected_code,expected
 
 
 def test_setting_params():
-    load_dotenv(verbose=True)
     ##
     src='../data/addr.csv'
     src_selection="rect" 
