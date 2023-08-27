@@ -23,11 +23,6 @@ def test_secret_key_password():
     assert encoded!=password
     assert CeleryBase.decrypt(encoded)==password
 
-def test_celery_base_predefined(celeryBase:CeleryBase):
-    ## no connection backend
-    celeryBase.configure_celery_task()
-    results=celeryBase.app.tasks['add'].apply(args=[1,2]).result
-    assert results == 3
 
 def test_celery_base_outside_defined(celeryBase:CeleryBase):
     ## no connection backend

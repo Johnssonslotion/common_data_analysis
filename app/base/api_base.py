@@ -67,7 +67,8 @@ class ApiBase(ApiModel):
         input : api request
         output : api responses
         '''
-        request_obj=self.param_parser(params=params,func=function)
+        if request_obj==None:
+            request_obj=self.param_parser(params=params,func=function)
         strategy=self.process_strategy(request_obj=request_obj)
         ret = await strategy.process(self,request_obj)
         ## process 함수는 wrapper 처럼 동작해야함
