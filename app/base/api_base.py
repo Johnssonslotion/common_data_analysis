@@ -59,4 +59,17 @@ class ApiBase(ApiModel):
             )
         return request_obj
     
+    async def process(self,params,function:str, request_obj:KakaoRequest)-> CommonResponse:
+        '''
+        TODO : process 시나리오 정의하기
+        process 함수는 api 응답을 받아서, 정제하는 함수
+        배분처리 로직은 run 함수에서 처리
+        input : api request
+        output : api responses
+        '''
+        request_obj=self.param_parser(params=params,func=function)
+        strategy=self.process_strategy(request_obj=request_obj)
+        ret = await strategy.process(self,request_obj)
+        ## process 함수는 wrapper 처럼 동작해야함
+        return ret
     
