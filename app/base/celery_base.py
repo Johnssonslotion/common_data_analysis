@@ -24,7 +24,8 @@ class CeleryBase:
     def __init__(self, username, password,ENV=None, config=None):
         ## For local, #TODO : For production
         if ENV=="PROD":
-            url=os.environ.get("RABBITMQ_URL")
+            broker_url=os.environ.get("RABBITMQ_URL")
+            broker_url=os.environ.get("RADIS_URL")
         elif ENV=="DOCKER":
             broker_url="rabbitmq"
             redis_url="redis"
@@ -37,7 +38,9 @@ class CeleryBase:
             password="guest"
                 
         password=self.decrypt(password)
-        self.app=Celery('tasks',backend=f'redis://{username}:{password}@{redis_url}//',broker=f'pyamqp://{username}:{password}@{broker_url}//')
+        ## TODO 
+        #self.app=Celery('tasks',backend=f'redis://{username}:{password}@{redis_url}/0',broker=f'pyamqp://{username}:{password}@{broker_url}//')
+        self.app=Celery('tasks',backend=f'redis://{redis_url}/0',broker=f'pyamqp://{username}:{password}@{broker_url}//')
         self.config()
         if config:
             self.config_update(**config)
@@ -193,3 +196,5 @@ class CeleryBase:
     def get_result_by_group(self,group_id):
         group_result=GroupResult.restore(group_id,app=self.app)
         return group_result
+    
+    

@@ -42,7 +42,7 @@ def test_common_api_set_params():
             },
         )
         matrix,df=setting_params(config)
-    except FileExistsError as e:
+    except FileNotFoundError as e:
         pytest.skip("file not exists")
     conn.define_iter(
         config=config
@@ -53,20 +53,23 @@ def test_common_api_set_params_columns():
     conn=ApiFunction(model=Apis.kakao)
     src='./data/kimhae_target_section.csv'
     src_selection=["x","y"]
-    config=CommonSet(
-        model=Apis.kakao,
-        function="keyword",
-        src=src,
-        selection=src_selection,
-        params={
-            "category_group_code":[KakaoCategory.ACADEMY,KakaoCategory.CAFE],
-            "query":["카카오"],
-        },
-    )
-    matrix,df=setting_params(config)
-    conn.define_iter(
-        config=config
-    )
+    try:
+        config=CommonSet(
+            model=Apis.kakao,
+            function="keyword",
+            src=src,
+            selection=src_selection,
+            params={
+                "category_group_code":[KakaoCategory.ACADEMY,KakaoCategory.CAFE],
+                "query":["카카오"],
+            },
+        )
+        matrix,df=setting_params(config)
+        conn.define_iter(
+            config=config
+        )
+    except FileNotFoundError as e:
+        pytest.skip("file not exists")
     assert len(conn.queue)==len(matrix)
 
 
@@ -85,10 +88,10 @@ async def test_common_api_call_api_local_case_1_no_area():
     assert ret.meta.is_end ==True, "기본 출력값 확인" 
     assert ret.meta.total_count==3, "기본 출력값 확인" 
 
-def test_common_api_call_api_remote_enroll():
-    pass
+# def test_common_api_call_api_remote_enroll():
+#     pass
 
 
 
-def test_common_api_call_api_remote_update():
-    pass
+# def test_common_api_call_api_remote_update():
+#     pass

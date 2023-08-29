@@ -10,9 +10,12 @@ from cryptography.fernet import Fernet
 
 @pytest.fixture(scope="module")
 def celeryBase():
-    username=os.environ.get("RABBITMQ_WORKER_1_USER")
-    password=os.environ.get("RABBITMQ_WORKER_1_PASS_ENC")
-    manager=CeleryBase(username=username,password=password,ENV="DEV")
+    username=os.environ.get("RABBITMQ_WORKER_USER")
+    password=os.environ.get("RABBITMQ_WORKER_PASS_ENC")
+    manager=CeleryBase(
+                username=username,
+                password=password,ENV="DEV"
+                )
     return manager
 
 def test_secret_key_password():
@@ -24,10 +27,12 @@ def test_secret_key_password():
 
 def test_celery_base_outside_defined(celeryBase:CeleryBase):
     ## no connection backend
-    @celeryBase.app.task(name="sub")
+    #@celeryBase.app.task(name="sub")
     def sub(x,y):
         return x-y
+    celeryBase.register_task("sub",sub)
     results=celeryBase.app.tasks['sub'].apply(args=[1,2]).result
+
     assert results == -1
 
 def test_celery_base_function_injection(celeryBase:CeleryBase):
