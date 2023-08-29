@@ -10,7 +10,7 @@ data/
 logs/
 note/
 rabbitmq/
-
+redis/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

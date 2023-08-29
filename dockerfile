@@ -22,4 +22,5 @@ COPY ./entrypoint.sh /home/worker/geospatial_data_analysis/entrypoint.sh
 RUN chmod +x /home/worker/geospatial_data_analysis/entrypoint.sh
 WORKDIR /home/worker/geospatial_data_analysis
 USER worker
+RUN poetry update
 ENTRYPOINT ["entrypoint.sh"]

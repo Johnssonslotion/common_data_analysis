@@ -17,7 +17,16 @@ services:
     restart: always
     networks:
       - mqnet
-
+  radis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+      - ./redis/logs:/logs
+    restart: always
+    networks:
+      - mqnet
   worker_1:
     image: celeryworker:latest
     env_file:
@@ -25,10 +34,12 @@ services:
     environment:
       - RABBITMQ_WORKER_USER=WORKER_1
       - ENV=DOCKER
+      - concurrency=3
     networks:
       - mqnet
     depends_on:
       - rabbitmq
+      - radis
   
   worker_2:
     image: celeryworker:latest
@@ -37,10 +48,12 @@ services:
     environment:
       - RABBITMQ_WORKER_USER=WORKER_2
       - ENV=DOCKER
+      - concurrency=3
     networks:
       - mqnet
     depends_on:
       - rabbitmq
+      - radis
 
   worker_3:
     image: celeryworker:latest
@@ -49,10 +62,12 @@ services:
     environment:
       - RABBITMQ_WORKER_USER=WORKER_3
       - ENV=DOCKER
+      - concurrency=3
     networks:
       - mqnet
     depends_on:
       - rabbitmq
+      - radis
 networks:
   mqnet:
     driver: bridge
