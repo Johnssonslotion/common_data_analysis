@@ -1,6 +1,7 @@
 from enum import Enum
+import pandas as pd
 from pydantic_core import CoreSchema, core_schema
-from pydantic import BaseModel, Field, PrivateAttr, computed_field, GetCoreSchemaHandler, GetJsonSchemaHandler, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, computed_field, GetCoreSchemaHandler, GetJsonSchemaHandler, model_validator
 from pydantic.json_schema import JsonSchemaValue
 from typing import Optional, List, Union, Any
 #from ..base import ApiBase
@@ -61,8 +62,9 @@ class CommonSet(BaseModel):
     변수를 받을때 List 형태로 받을 수 있으며,
     List 형태 내부의 형태는 function 으로 정의된 기존 파라미터의 형태로 정의한다.    
     '''
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     model:Any ## TODO : Apis Enum 에 적합한 형태로 정의하기
-    src: Optional[str] = Field(None, description="source file path")
+    src: Optional[Union[str,pd.DataFrame]] = Field(None, description="source file path")
     selection: Optional[Union[List,str]] = Field(None, description="column selection")
     function: str = Field(...,description="function name")
     params: dict  = Field(...,description="function params")    

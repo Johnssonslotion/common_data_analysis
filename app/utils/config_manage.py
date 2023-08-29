@@ -15,7 +15,10 @@ def setting_params(param_config:CommonSet):
     df=pd.DataFrame()
     base={}
     if param_config.src is not None:
-        df=loading_df(param_config)
+        if type(param_config.src) is str:
+            df=loading_df(param_config)
+        elif type(param_config.src) is pd.DataFrame:
+            df=param_config.src
         if type(param_config.selection) is list:
             ele_cols=zip(*[df[jj] for jj in param_config.selection])        
         else:
