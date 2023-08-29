@@ -1,4 +1,5 @@
 import itertools
+import pickle
 
 from celery import Task
 from model import *
@@ -102,7 +103,7 @@ class ApiFunction(Task, ApiBase,BaseLogger):
         self.df=df
         self.queue=queue
         self.report(fn='define_model',state='end',msg=f'num_of_length : {len(queue)}') ## TODO : pydantic V2 에 적합한 출력폼으로 변경
-
+        return queue
     
     
     async def run(self,**kwargs):
@@ -116,6 +117,12 @@ class ApiFunction(Task, ApiBase,BaseLogger):
             return await self.call_api(**kwargs)
         else:
             self.report(obj=str(self.model),prefix="queue",fn='run',state='start')
+            self.queue
+
+            
+            
+            
+            
             if "params" not in kwargs.keys():
                 raise Exception("params should be defined")
             else:
@@ -156,9 +163,27 @@ class ApiFunction(Task, ApiBase,BaseLogger):
         request_obj=kwargs.get("request_obj",None)
         ret= await super().process(params=params, function=func,request_obj=request_obj)
         ## process 함수는 wrapper 처럼 동작해야함
-        return ret
+        if "geohash" in ret[0].keys():
+            df=pd.DataFrame(self.insert_geohash(ret))
+        else:
+            total=[i["response"].documents for i in ret]
+            total=list(itertools.chain(*total))
+            df=pd.DataFrame(total) #.drop_duplicates(keep='first', inplace=True)
+        return ret,df
         
-
+    def insert_geohash(self,ret):
+        '''
+        geohash를 dict에 포함하는 함수        
+        '''
+        # total=[]
+        # for i in ret:
+        #     modified_documents=[]
+        #     for j in i["response"].documents:
+        #         modified_documents.append(j.update({"geohash":i["geohash"]}))
+        #     total.append(modified_documents)
+        # return total
+        ## list comprehension translate
+        return [{**j, "geohash":i["geohash"]} for i in ret for j in i["response"].documents]
 
 
         

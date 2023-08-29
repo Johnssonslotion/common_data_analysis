@@ -1,3 +1,4 @@
+from copy import deepcopy
 from base import ApiBase
 from api import KakaoRequest,KakaoResponse
 from typing import List,Any, Dict, Optional, Union
@@ -7,6 +8,7 @@ from pydantic import BaseModel, Field
 from utils.log import BaseLogger
 from geohash_manager import GeohashManager
 import re
+import pygeohash as pgh
 
 class KakaoStrategyConfig(BaseModel):
     geohash_start:int=Field(4,description="검색영역의 geohash 시작값")
@@ -98,29 +100,37 @@ class KakaoStrategy(BaseLogger):
         ## step 3: 만약 생성된 geohash가 
         ## step 3: 생성된 geohash 를 1단계 나누어서(1단계 길이를 증가시켜서) request를 생성한다.
         '''
+        #print("devided start")
+        #print(f"\n quene:{len(self.request_candidate)} total_count:{ret['response'].meta.total_count},size:{100*(self.curser.params.rect.xmax-self.curser.params.rect.xmin):2.2f}:{100*(self.curser.params.rect.ymax-self.curser.params.rect.ymin):2.2f},rect:{self.curser.params.rect} page:{self.curser.params.page},request_candidate:{len(self.request_candidate)}")
         base_request_obj=request_obj
         bbox=request_obj.params.rect.items
-        manager=GeohashManager(limits=6)
-        candidate=manager.rect_to_rects(bbox=bbox)
+        manager=GeohashManager(limits=7)
+        candidate, geohash_set=manager.rect_to_rects(bbox=bbox)
         if len(candidate)<=1:
-            manager=GeohashManager(limits=7)
-            candidate=manager.xyr_to_rects(bbox=bbox)
-        for i in candidate:
+            manager=GeohashManager(limits=8)
+            candidate, geohash_set=manager.rect_to_rects(bbox=bbox)
+        for i,jj in zip(candidate,geohash_set):
+            base_request_obj.params.page=1
             base_request_obj.params.rect=i ##RectShape 객체로 변경완료
-            self.request_candidate.append(base_request_obj)
+            #print(base_request_obj.params.rect)
+            copied_request_obj=deepcopy(base_request_obj)
+            self.request_candidate.append(copied_request_obj)
             #request_obj.params.rect=i ## TODO : Rect객체에서 str로 변환하는 함수를 만들어야함.
+            # print(f"request_candidate:{len(self.request_candidate)}")
+            # print(f"base_request_obj:{jj} _ {copied_request_obj.params.rect}")
         return
         
-
     def request_analysis_default(self,request_obj:KakaoRequest,response_obj:KakaoResponse):
         '''
         request_obj 를 분석하여, 검색영역을 분할한다. _ 기본적인 page처리를 한다.
         '''
         ## 현재 커서가 마지막 페이지인지 확인
         if response_obj.meta.is_end:
+            request_obj.params.page=1
             self.end=True
             return
         elif request_obj.params.page == 3:
+            request_obj.params.page=1
             self.end=True
             return
         else:
@@ -140,15 +150,26 @@ class KakaoStrategy(BaseLogger):
         '''
         self.curser=request_obj
         while self.curser:
-            response_obj= await api.call_api(request_obj=request_obj)
-            ret={
-                "request":request_obj,
-                "response":response_obj
-            }
-            self.ret.append(ret)
+            response_obj= await api.call_api(request_obj=self.curser)
+            if self.curser.params.rect is not None:
+                geohash=GeohashManager.rect_geohash(self.curser.params.rect)
+                ret={
+                    "geohash":geohash,
+                    "request":request_obj,
+                    "response":response_obj
+                }
+            else: 
+                ret={
+                    "request":request_obj,
+                    "response":response_obj
+                }
+            # if ret['response'].meta.total_count > 100:
+            #     print(f"\n quene:{len(self.request_candidate)} total_count:{ret['response'].meta.total_count},size:{100*(self.curser.params.rect.xmax-self.curser.params.rect.xmin):2.2f}:{100*(self.curser.params.rect.ymax-self.curser.params.rect.ymin):2.2f},rect:{self.curser.params.rect} page:{self.curser.params.page},request_candidate:{len(self.request_candidate)}")
+            #     print("break")
             ## 객체에 담아두기, request 결과(response)에 따라서, 다음 request를 생성한다.
-            self.request_analysis_main(request_obj=request_obj,response_obj=response_obj)
-            print(f"\n ret_len:{len('ret')}, page:{self.curser.params.page},request_candidate:{len(self.request_candidate)}")
+            self.request_analysis_main(request_obj=self.curser,response_obj=response_obj)
+            ## request_cache에 저장된 request를 순차적으로 처리한다.
+            self.ret.append(ret)
             if len(self.request_candidate)>0:
                 self.curser=self.request_candidate.pop()
             else:

@@ -1,9 +1,19 @@
+from multiprocessing.pool import AsyncResult
 from celery import Celery, Task
 import os
 from celery.bin import worker
-
+from celery.result import GroupResult
 
 from utils import decrypt, encrypt
+
+
+
+# app=Celery('tasks')
+# app.config_from_object('celeryconfig')
+
+
+
+
 
 class CeleryBase:
     '''
@@ -16,15 +26,18 @@ class CeleryBase:
         if ENV=="PROD":
             url=os.environ.get("RABBITMQ_URL")
         elif ENV=="DOCKER":
-            url="rabbitmq"
+            broker_url="rabbitmq"
+            redis_url="redis"
         else:
-            url="localhost"
+            broker_url="localhost:5672"
+            redis_url="localhost:6379"
+            #url="localhost"
         if username=="guest":
             username="guest"
             password="guest"
                 
         password=self.decrypt(password)
-        self.app=Celery('tasks',backend=f'rpc://{username}:{password}@{url}//',broker=f'pyamqp://{username}:{password}@{url}//')
+        self.app=Celery('tasks',backend=f'redis://{username}:{password}@{redis_url}//',broker=f'pyamqp://{username}:{password}@{broker_url}//')
         self.config()
         if config:
             self.config_update(**config)
@@ -78,8 +91,15 @@ class CeleryBase:
         '''
         function을 task로 등록한다.
         '''
-        self.app.task(name=name)(func)
+        return self.app.task(name=name)(func)
     
+    def create_signature(self, name, *args, **kwargs):
+        '''
+        task의 signature를 생성한다.
+        '''
+        
+        return self.app.signature(name,app=self.app,args=args,kwargs=kwargs["kwargs"])
+
     def run_worker(self, *args):
         '''
         celery worker를 실행한다.
@@ -159,4 +179,17 @@ class CeleryBase:
         --help  Show this message and exit.     
         '''
         args=["worker","--loglevel=INFO"]
+        if os.environ["concurrency"] is not None:
+            args.append(f"--concurrency={os.environ['concurrency']}")
+        # if os.environ["max_tasks_per_child"] is not None:
+        #     args.append(f"--max-tasks-per-child={os.environ['max_tasks_per_child']}")
         return self.app.worker_main(argv=args)
+    def get_result(self,task_id):
+        res = AsyncResult(task_id, app=self.app)
+        status = res.status
+        result = res.result
+        return status, result
+    
+    def get_result_by_group(self,group_id):
+        group_result=GroupResult.restore(group_id,app=self.app)
+        return group_result

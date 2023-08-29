@@ -1,3 +1,4 @@
+import asyncio
 import os
 import time
 from celery import Celery
@@ -7,6 +8,9 @@ from api_function import ApiFunction
 from base.celery_base import CeleryBase
 from base.mqmanage_base import MqManager
 from utils.log import BaseLogger
+
+
+
 
 
 class CeleryManager(BaseLogger):
@@ -59,26 +63,49 @@ class CeleryManager(BaseLogger):
             password=os.environ.get("RABBITMQ_WORKER_PASS_ENC"),
             ENV=self.env
         )
-        def process(params=None, function=None, request_obj=None):
+        def process(**kwargs):
+            params=kwargs.get("params",None)
+            function=kwargs.get("function",None)
+            request_obj=kwargs.get("request_obj",None)
             conn=ApiFunction(model=Apis.kakao)
-            return conn.process(params=params, function=function, request_obj=request_obj)
+            ret,df = asyncio.run(conn.process(params=params, function=function, request_obj=request_obj)) 
+            return ret,df
         self.celeryBase.register_task("process",process)
         self.celeryBase.run_worker()
-
-    def client_run(self):
+ 
+    def client_setup(self):
         '''
         celery client를 실행한다.
         '''
-        pass
-        
 
+        self.report(fn="client_set",state="start")
+        if self.env=="PROD":
+            username=os.environ.get("RABBITMQ_WORKER_USER")
+            password=os.environ.get("RABBITMQ_WORKER_PASS_ENC")
+            password=CeleryBase.decrypt(password)
+        else:
+            username=os.environ.get("RABBITMQ_DEFAULT_USER")
+            password=CeleryBase.encrypt(os.environ.get("RABBITMQ_DEFAULT_PASS"))
+
+        self.celeryBase=CeleryBase(
+            username=username,
+            password=password,
+            ENV=self.env
+        )       
+        def process(**kwargs):
+            params=kwargs.get("params",None)
+            function=kwargs.get("function",None)
+            request_obj=kwargs.get("request_obj",None)
+            conn=ApiFunction(model=Apis.kakao)
+            return asyncio.run(conn.process(params=params, function=function, request_obj=request_obj))
+        self.celeryBase.register_task("process",process)
 
 if __name__ == "__main__":
     load_dotenv()
     env=os.environ["ENV"]
     manager=CeleryManager(env=env)
     manager.server_run()
-    #manager.client_run()
+    
 
 
 
