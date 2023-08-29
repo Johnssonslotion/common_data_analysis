@@ -30,18 +30,20 @@ def test_common_api_set_params():
     ## default src
     src='./data/kimhae_target_section.csv'
     src_selection="x"
-
-    config=CommonSet(
-        model=Apis.kakao,
-        function="keyword",
-        src=src,
-        selection=src_selection,
-        params={
-            "category_group_code":[KakaoCategory.ACADEMY,KakaoCategory.CAFE],
-            "query":["카카오"],
-        },
-    )
-    matrix,df=setting_params(config)
+    try:
+        config=CommonSet(
+            model=Apis.kakao,
+            function="keyword",
+            src=src,
+            selection=src_selection,
+            params={
+                "category_group_code":[KakaoCategory.ACADEMY,KakaoCategory.CAFE],
+                "query":["카카오"],
+            },
+        )
+        matrix,df=setting_params(config)
+    except FileExistsError as e:
+        pytest.skip("file not exists")
     conn.define_iter(
         config=config
     )
