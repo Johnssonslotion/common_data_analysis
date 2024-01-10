@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "common-data-analysis"
 version = "0.2.0"
-description = "analysis package for geospatial data"
+description = "analysis package for common & geospatial data"
 authors = ["John Park <johnpark@johnssonslab.info>"]
 readme = "README.md"
 
